@@ -1,0 +1,52 @@
+#!/usr/local/bin/python
+import sys,math, ephem, starcalc,enoch, search, mx.DateTime
+
+# get list of potential cycle start dates
+e = enoch.Date("-20000/1/1" )
+earr = {"enoch":e,"ve":e.djd}
+eqlist = [] 
+for count in range(0,200):
+    earr = search.Date.next_ve_nm( earr["ve"] , accuracy = 1, dow = 3)
+    eqlist += [ earr["enoch"].djd ]
+
+print "found %d potential date matches" % len(eqlist)
+
+# build date groups of interest
+datelist = []
+
+# Date Jesus was born based on Revelation 12 ( 
+# sun clothed the virgin and the moon at her feet )
+#d = ephem.Date("-7/9/23 11:40:37")
+d = ephem.Date("-7/9/23 12:00:00")
+
+# 6 months when priest zacariah had vision about his son john in week of Abijah
+datelist += [ephem.Date(d-278-179)]
+
+# 9 months + 5 days ( 91*3+5 ? or 90*3=5 ) -- ( lefafa sedek ) jesus conception
+datelist += [ephem.Date(d-278)]
+
+# -7/9/23 Jesus Birthdate
+datelist += [d]
+
+last_epoch = None
+header = search.Table.day_header()
+for eq in eqlist:
+    #change enoch epochdate
+    enoch.EpochDate = str(eq)
+    rows = []
+    list = []
+    for year in datelist:
+        e = enoch.Date ( year )
+        row = search.Table.day_row(e)
+        rows += row
+        list += [row[0][5]]
+
+    if list[0] == "Abijah":
+        if last_epoch is not None:
+            dif = (math.fabs(last_epoch - eq)/364) % 294
+            last_epoch = eq
+        else:
+            last_epoch = eq
+            dif = 0
+        print "\n[%d]Epoch: %s" % (dif,enoch.EpochDate)
+        starcalc.Columnize.cprint ( header + rows )

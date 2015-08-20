@@ -1,0 +1,25 @@
+#!/usr/local/bin/python
+import argparse, sys, search
+
+__VERSION = "0.5"
+
+parser = argparse.ArgumentParser(description="calculate dates on the enoch calendar")
+parser.add_argument('-v','--version', action='version', version='%(prog)s ' + __VERSION )
+
+sub_parsers = parser.add_subparsers(help='commands')
+
+list_parser = sub_parsers.add_parser("list",help="show running containers")
+list_parser.add_argument("date", nargs='?', default='now', help="start date")
+list_parser.add_argument("-b","--bc",action='store_true',default=False, help="date is BC")
+list_parser.add_argument("-c","--count",type=int,default=7, help="number of results to return")
+list_parser.add_argument("-s","--dayskip",type=int,default=1, help="increment by --dayskip number of days")
+list_parser.add_argument("-y","--yearskip",type=int,default=0, help="increment by --yearskip number of enoch years")
+list_parser.add_argument("-o","--offset",type=int,default=0, help="offset date results by --offset days")
+list_parser.add_argument("-n","--negoffset",type=int,default=0, help="negative offset date results by --offset days")
+
+args = parser.parse_args(sys.argv[1:])
+
+if sys.argv[1].lower() == "list":
+    parms = {'count':args.count,'date':args.date,'dayskip':args.dayskip,'yearskip':args.yearskip,'offset':args.offset,'bc':args.bc,'negoffset':args.negoffset}
+
+    search.Table.list_days ( ** parms )
