@@ -20,9 +20,9 @@ class Table(object):
         elif str(date).lower() == "now":
             edate = ephem.now()
         elif str(date).lower() == "priest":
-            edate = "-8/6/23"
+            edate = "-8/6/23 12:00:00"
         elif str(date).lower() == "conception":
-            edate = "-8/12/19"
+            edate = "-8/12/19 12:00:00"
         elif str(date).lower() == "birth":
             edate = "-7/9/23 12:00:00"
         else:

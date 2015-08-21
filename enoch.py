@@ -11,6 +11,7 @@ import math
 #EpochDate = "-9999/6/5"
 #EpochDate = "-8693/5/27"
 EpochDate = "-5269/5/3 12:00:00"
+#EpochDate = "-10629/6/9 12:00:00"
 
 # the twelve portals 6 = summer solstice, 1 = winter solstice
 Portal = (4,5,6,-6,-5,-4,-3,-2,-1,1,2,3)

@@ -26,6 +26,7 @@ class Places(object):
         golgotha.lon = "35.2296886"
         golgotha.elevation = 2484
         golgotha.date = date
+        golgotha.epoch = date
         golgotha.pressure = 0
         return golgotha
 
