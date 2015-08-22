@@ -10,7 +10,17 @@ class Table(object):
 
     @staticmethod
     def day_header ():
-        return  [["DJD","JD","EAD","ETD","Week","Priest","DOW","Sun","Pos","Phase","Date","Total","YearDay","Constellation"]]
+        return  [["DJD","JD","EAD","ETD","Week","Priest","DOW","Year Day","New Year","Sun","Sunrise[G]","Sun Azimuth","Phase","Date","Total","YearDay","Constellation"]]
+
+    @staticmethod
+    def day_row ( e ):
+        dow = starcalc.weekday( e.jd() )
+        sun,date = starcalc.Earth.previous_azimuth ( e.djd, e.sun )
+        goldate = "%s" % ( date )
+        az = "%.2f" % (sun.az * starcalc.RADIAN)
+
+        return [[e.djd,e.jd(),e.ead_date(),e.etd_date(),e.week,enoch.Priests_Chronicals[e.week-1], str(e.dayofweek+1) + ":" + enoch.DayOfWeek[e.dayofweek],int(e.yearday),int(e.newyear),ephem.constellation(e.sun)[1],goldate,az,"%.4f" % e.moon.ephem.moon_phase,"%d/%d" % (e.moon.month , e.moon.monthday), "%d/%d" % ( e.moon.monthlength, e.moon.months), "%d/%d" % ( e.moon.yearday , e.moon.yearlength ), ephem.constellation(e.moon.ephem)[1]]]
+
 
     @staticmethod
     def list_days(date = "epoch", count = 30, dayskip = 1, yearskip = 0, offset = 0, negoffset = 0, bc = False):
@@ -52,15 +62,6 @@ class Table(object):
 
 
 
-    @staticmethod
-    def day_row ( e ):
-        dow = starcalc.weekday( e.jd() )
-
-        sun,date = starcalc.Earth.previous_azimuth ( e.djd, e.sun )
-
-        sunPos = "%s / %.2f" % ( date, sun.az * starcalc.RADIAN )
-
-        return [[e.djd,e.jd(),e.ead_date(),e.etd_date(),e.week,enoch.Priests_Chronicals[e.week-1], str(dow) + ":" + str(e.dayofweek) + ":" + enoch.DayOfWeek[e.dayofweek],ephem.constellation(e.sun)[1],sunPos,"%.4f" % e.moon.ephem.moon_phase,"%d/%d" % (e.moon.month , e.moon.monthday), "%d/%d" % ( e.moon.monthlength, e.moon.months), "%d/%d" % ( e.moon.yearday , e.moon.yearlength ), ephem.constellation(e.moon.ephem)[1]]]
 
 
 class Date(object):
