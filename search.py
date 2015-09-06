@@ -1,3 +1,4 @@
+import os
 import sys
 import math
 import enoch
@@ -7,6 +8,29 @@ import mx.DateTime
 import pytz
 
 class Table(object):
+
+    @staticmethod
+    def chart_day_header ():
+        return [["Earth","Moon","Enoch","DOW","Priest","day","Season","Rising","Moon Phase","Sun","Moon"]]
+
+    @staticmethod
+    def chart_day_divider(d):
+        return [[d,"","","","","","","","","",""]]
+
+    @staticmethod
+    def chart_day_row ( e ):
+        dow = starcalc.weekday( e.jd() )
+        sun,date = starcalc.Earth.previous_azimuth ( e.djd, e.sun )
+        goldate = "%s" % ( date )
+        az = "%.2f" % ((sun.az * starcalc.RADIAN)-90.0)
+
+        ny = e.newyear
+        ny_season = int(ny * 4 / 364)
+        season_day = ny - ( ny_season * 91 )
+
+
+        return [[ e.djd, "%d/%d" % (e.moon.month,e.moon.monthday), "( %s ) %s" % (e.ead_date(),e.etd_date()), enoch.DayOfWeek[e.dayofweek],"[%d] %s" % ( e.week, enoch.Priests_Chronicals[e.week-1] ),"%d" % e.yearday,"%d.%d (%d)" % ( ny_season, season_day, ny) , az, "%.4f" % e.moon.ephem.moon_phase, ephem.constellation(e.sun)[1], ephem.constellation(e.moon.ephem)[1] ]]
+
 
     @staticmethod
     def day_header ():
@@ -23,10 +47,20 @@ class Table(object):
 
 
     @staticmethod
-    def list_days(date = "epoch", count = 30, dayskip = 1, yearskip = 0, offset = 0, negoffset = 0, bc = False):
+    def list_days(date = "epoch", count = 30, dayskip = 1, yearskip = 0, offset = 0, negoffset = 0, bc = False,readfile = False):
 
-        if str(date).lower() == "epoch":
-            edate = enoch.EpochDate
+        datelist = None
+        if ( readfile ):
+
+            if os.path.isfile ( date ):
+                with open(date) as f:
+                    datelist = []
+                    for line in f:
+
+                        datelist += [line.replace("\n","") + " 12:00:00"]
+
+        elif str(date).lower() == "epoch":
+            edate = enoch.EpochDat
         elif str(date).lower() == "now":
             edate = ephem.now()
         elif str(date).lower() == "priest":
@@ -38,25 +72,36 @@ class Table(object):
         else:
             if bc:
                 date = "-" + date
+
             edate = "%s 12:00:00" % ( str(date) )
 
-        e = enoch.Date( edate )
 
-        if offset > 0 :
-            e.next_day(offset)
-        if negoffset > 0:
-            e.prev_day(negoffset)
+        if datelist is None:
+            datelist = [edate]
 
-        #startday = e.djd
-        startday = e.djd
-        rows = Table.day_header()
-        for year in range( count ):
-            rows += Table.day_row(e)
 
-            if yearskip > 0:
-                e.next_year ( yearskip )
-            else:
-                e.next_day(dayskip)
+        rows = Table.chart_day_header()
+        for edate in datelist:
+
+            e = enoch.Date( edate )
+
+            if len(rows) > 2:
+                rows += Table.chart_day_divider('---')
+
+            if offset > 0 :
+                e.next_day(offset)
+            if negoffset > 0:
+                e.prev_day(negoffset)
+
+            #startday = e.djd
+            startday = e.djd
+            for year in range( count ):
+                rows += Table.chart_day_row(e)
+
+                if yearskip > 0:
+                    e.next_year ( yearskip )
+                else:
+                    e.next_day(dayskip)
 
         starcalc.Columnize.cprint ( rows )
 
