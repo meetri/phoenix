@@ -1,3 +1,8 @@
+Requirements:
+pyephem
+pytz
+egenix-mx-base
+
 # phoenix
 code to calculate the days and cycles in the phoenix calendar
 
