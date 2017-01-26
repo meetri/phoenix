@@ -1,0 +1,166 @@
+<div class="container">
+    <nav class="navbar navbar-full navbar-dark bg-inverse">
+        <div class="navbar-brand">Date:</div>
+        <form class="form-inline" method="post" action="/clock">
+
+            <div class='row'>
+                <select name='dateType' class='form-control'><option {{formdata.sel_gregorian}}>Gregorian</option><option {{formdata.sel_phoenix}}>Phoenix</option><option {{formdata.sel_julian}}>Julian</option></select>
+                <input class="form-control" type="text" name='date' value="{{formdata.date}}" placeholder="MM/DD/YYYY" />
+                <button class="btn btn-success" name='submit' value='go' type="submit">Go</button>
+            </div>
+            <div class='row pad'>
+                <div class='col-sm-1'>&nbsp;</div>
+                <div class='col-sm-11'>
+                    <input class="form-control" type="text" size='14' name='incval' value='{{formdata.skipamount}}' placeholder='SKIP AMOUNT' />
+                    <select name='skipType' class='form-control'><option {{formdata.sel_days}}>Days</option><option {{formdata.sel_years}}>Years</option></select>
+                    <button class="btn btn-outline-success" name='submit' value='prev' type="submit">Prev</button>
+                    <button class="btn btn-outline-success" name='submit' value='next' type="submit">Next</button>
+                </div>
+            </div>
+
+        </form>
+    </nav>
+
+    <div>
+
+      <!-- Nav tabs -->
+      <ul class="nav pad nav-pills" role="tablist">
+        <li role="presentation" class="nav-item"><a class='active nav-link' href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+        <li role="presentation" class="nav-item"><a class='nav-link' href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Dates of Interest</a></li>
+      </ul>
+
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active" id="home">
+            <h4 class='pad text-muted'>Calendar Details</h4>
+            <div class='row text-info'>
+                <div class='col-sm-4'>Day Of Week</div>
+                <div class='col-sm-4'>Gregorian Date</div>
+                <div class='col-sm-4'>Gregorian Time</div>
+            </div>
+            <div class='row xtext-muted'>
+                <div class='col-sm-4'>{{enochday.week_name}}</div>
+                <div class='col-sm-4'>{{enochday.time.tm.localtime(enochday.djd,dateOnly=True)}}</div>
+                <div class='col-sm-4'>{{enochday.time.tm.localtime(enochday.djd,timeOnly=True)}}</div>
+            </div>
+
+            <h4 class='pad text-muted'>Phoenix Dates</h4>
+            <div class='row pad text-info'>
+                <div class='col-sm-4'>Phoenix Date</div>
+                <div class='col-sm-4'>Phoenix Time Abrv</div>
+                <div class='col-sm-4'>Phoenix Time</div>
+            </div>
+            <div class='row xtext-muted'>
+                <div class='col-sm-4'>{{enochday.etd_date()}} ( {{enochday.ead_date()}} )</div>
+                <div class='col-sm-4'>{{enochday.clock.degree}}&deg; {{enochday.clock.moment}}</div>
+                <div class='col-sm-4'>{{enochday.clock.part}}:{{enochday.clock.part_seg}}:{{enochday.clock.moment}}</div>
+            </div>
+            <div class='row pad text-info'>
+                <div class='col-sm-4'>Week</div>
+                <div class='col-sm-4'>New Year Day</div>
+                <div class='col-sm-4'>Day In Year</div>
+            </div>
+            <div class='row xtext-muted'>
+                <div class='col-sm-4'>[{{enochday.week}}] {{enochday.priest}}</div>
+                <div class='col-sm-4'>{{enochday.newyear}}</div>
+                <div class='col-sm-4'>{{enochday.dayinyear()}}</div>
+            </div>
+
+            <div class='row pad text-info'>
+                <div class='col-sm-4'>Cycle</div>
+                <div class='col-sm-4'>Yearday</div>
+                <div class='col-sm-4'>Az @ sun rise</div>
+            </div>
+            <div class='row xtext-muted'>
+                <div class='col-sm-4'>{{enochday.cycle}}</div>
+                <div class='col-sm-4'>{{enochday.yearday}}</div>
+                <div class='col-sm-4'>{{enochday.cosmos.previous_azimuth( enochday, enochday.sun )}}</div>
+            </div>
+
+
+            <h4 class='pad text-muted'>The Moon</h4>
+            <div class='row text-info'>
+                <div class='col-sm-4'>Lunar Date</div>
+                <div class='col-sm-4'>Days in month</div>
+                <div class='col-sm-4'>Months in year</div>
+            </div>
+            <div class='row xtext-muted'>
+                <div class='col-sm-4'>{{enochday.moon.month}}/{{enochday.moon.monthday}}</div>
+                <div class='col-sm-4'>{{enochday.moon.monthlength}}</div>
+                <div class='col-sm-4'>{{enochday.moon.months}}</div>
+            </div>
+
+            <div class='row pad text-info'>
+                <div class='col-sm-4'>Moon Phase</div>
+                <div class='col-sm-4'>Moon Sign</div>
+                <div class='col-sm-4'>Sign Degree</div>
+            </div>
+            <div class='row xtext-muted'>
+                <div class='col-sm-4'>{{enochday.moon.ephem.moon_phase}}</div>
+                <div class='col-sm-4'>{{enochday.cosmos.constellation(enochday.moon.ephem)[0]}}</div>
+                <div class='col-sm-4'>{{enochday.cosmos.constellation(enochday.moon.ephem)[1]}}%</div>
+            </div>
+
+            <h4 class='pad text-muted'>The Sun</h4>
+            <div class='row text-info'>
+                <div class='col-sm-4'>Sun Rising</div>
+                <div class='col-sm-4'>Sun Setting</div>
+                <div class='col-sm-4'>Daylight Arc</div>
+            </div>
+            <div class='row xtext-muted'>
+                <div class='col-sm-4'>{{enochday.time.tm.localtime(enochday.time.sun_rising,timeOnly=True)}} ( {{enochday.time.sun_rising}} )</div>
+                <div class='col-sm-4'>{{enochday.time.tm.localtime(enochday.time.sun_setting,timeOnly=True)}}</div>
+                <div class='col-sm-4'>{{enochday.time.convert_time(enochday.time.sun_setting,display=True)}}&deg;</div>
+            </div>
+            <div class='row pad text-info'>
+                <div class='col-sm-4'>Sun sign</div>
+                <div class='col-sm-4'>Degree in sign</div>
+                <div class='col-sm-4'>Sun Longitude</div>
+            </div>
+            <div class='row xtext-muted'>
+                <div class='col-sm-4'>{{ephem.constellation(enochday.sun)[1]}}-{{enochday.cosmos.constellation(enochday.sun)[0]}}</div>
+                <div class='col-sm-4'>{{enochday.cosmos.constellation(enochday.sun)[1]}}% </div>
+                <div class='col-sm-4'>{{enochday.cosmos.constellation(enochday.sun)[2]}}&deg;</div>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane fade" id="profile">
+            <h4 class='pad text-muted'>Dates of interest</h4>
+            <div class='row'>
+                <div class='col-sm-8'>Epoch</div>
+                <div class='col-sm-4'><a href='/clock?date=5/3/-5269 12:00:00'>5/3/-5269</a></div>
+            </div>
+
+            <h4 class='pad text-muted'>The life of Jesus</h4>
+            <div class='row'>
+                <div class='col-sm-8'>John The Baptist Conception</div>
+                <div class='col-sm-4'><a href='/clock?date=6/23/-8 12:00:00'>6/23/-8</a></div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-8'>Jesus Conception</div>
+                <div class='col-sm-4'><a href='/clock?date=12/19/-8 12:00:00'>12/19/-8</a></div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-8'>Jesus Birth</div>
+                <div class='col-sm-4'><a href='/clock?date=9/23/-7 12:00:00'>9/23/-7</a></div>
+            </div>
+
+            <h4 class='pad text-muted'>The Flood</h4>
+            <div class='row'>
+                <div class='col-sm-8'>The Flood Begins</div>
+                <div class='col-sm-4'><a href='/clock?date=6/23/-8 12:00:00'>6/23/-8</a></div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-8'>The Waters begin to recede</div>
+                <div class='col-sm-4'><a href='/clock?date=12/19/-8 12:00:00'>12/19/-8</a></div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-8'>Everyone leaves the ark</div>
+                <div class='col-sm-4'><a href='/clock?date=9/23/-7 12:00:00'>9/23/-7</a></div>
+            </div>
+        </div>
+      </div>
+
+    </div>
+
+</div>

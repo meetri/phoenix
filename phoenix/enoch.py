@@ -4,13 +4,20 @@ by: Demetrius A. Bell <meetri@gmail.com>
 2015
 '''
 import ephem
-import starcalc
+import enochephem
+#import starcalc
 import math
+#import datetime
+#import time
+#import pytz
+#import tzlocal
 
 #EpochDate = "-7/9/23"
 #EpochDate = "-9999/6/5"
 #EpochDate = "-8693/5/27"
 EpochDate = "-5269/5/3 12:00:00"
+#EpochDate = "-5269/5/3 00:00:00"
+#EpochDate = "-5269/5/3"
 #EpochDate = "-10629/6/9 12:00:00"
 
 # the twelve portals 6 = summer solstice, 1 = winter solstice
@@ -38,33 +45,55 @@ Priests = ("Delaiah","Maaziah","Jehoiarib","Jedaiah","Harim","Seorim","Malchijah
 
 class Time(object):
 
-    def __init__(self, timestr ):
+    def __init__(self, enoch ):
         self.moment = 0
+        self.degree = 0
+        self.part = 0
+        self.part_seg = 0
+        self.enoch = enoch
+        self.time = 0
+        self.set_time()
+
+    def get_time( self ):
+
+        sr_secs = self.enoch.time.time_to_seconds(self.enoch.time.sun_rising)
+        now_secs = self.enoch.time.time_to_seconds( ephem.now() )
+
+        print "srsecs = %d, nowsecs = %d" % ( sr_secs, now_secs )
+
+    def set_time( self, time = 0 ):
+        if time == 0:
+            time = self.enoch.djd
 
 
-class Moon(object):
+        local = self.enoch.time.tm.localtime ( time )
+        local_secs = self.enoch.time.time_to_seconds ( local )
+        local_sunrise = self.enoch.time.tm.localtime ( self.enoch.time.sun_rising )
+        sunrise_secs = self.enoch.time.time_to_seconds ( local_sunrise )
 
-    def __init__( self, date ):
-        self.date = date
-        self.ephem = ephem.Moon( date.djd )
+        #if it's after midnight ...
+        if local_secs < sunrise_secs:
+            dif = 86400 - ( sunrise_secs - local_secs )
+        else:
+            dif = local_secs - sunrise_secs
 
-        moonyear = starcalc.Earth.get_moon_year( date.djd )
-        self.yearmonths = moonyear[0]
-        self.yearstart = moonyear[1]
-        self.yearday = int(date.djd - self.yearstart)
-        self.months = len(self.yearmonths)
-        self.yearlength = int(sum( self.yearmonths ))
+        part = dif * 18 / 86400
+        seg_secs = (part - int(part)) * 1200
+        seg = int(seg_secs / 60 )
+        mom = int(seg_secs - ( seg * 60 ))
 
-        self.yearday += 1
+        deg = int(dif / 240 )
 
-        s = 0
-        for idx,days in enumerate(self.yearmonths):
-            s += days
-            if self.yearday <= s:
-                self.month = idx + 1
-                self.monthlength = int(days)
-                self.monthday = int(days - (s - self.yearday))
-                break
+        self.part = int(part)
+        self.part_seg = seg
+        self.moment = mom
+        self.degree = deg
+
+        return int(part),seg,deg,mom
+
+
+
+
 
 
 
@@ -76,6 +105,9 @@ class Date(object):
 
         # TODO: the vernal equinox of the epoch year
         self.epoch = 0
+
+        # priest in service
+        self.priest = ""
 
         # number of days since the epoch
         self.daycount = 0
@@ -131,13 +163,14 @@ class Date(object):
             self.set(date)
 
     def __str__(self):
-        return "daycount: %d, numweeks: %d, week: %d, year: %d, cycle: %d, yearday: %d, dayangle: %f, newyear: %d, translatedday: %d, month_day: %d, portal: %d, month: %d, dayshift: %f " % (self.daycount, self.numweeks,self.week,self.year,self.cycle,self.yearday,self.dayangle,self.newyear,self.translatedday,self.month_day,self.portal,self.month,self.dayshift)
+        return "daycount: %d, numweeks: %d, week: %d, year: %d, cycle: %d, yearday: %d, dayangle: %f, newyear: %d, translatedday: %d, month_day: %d, portal: %d, month: %d, dayshift: %f, priest: %s " % (self.daycount, self.numweeks,self.week,self.year,self.cycle,self.yearday,self.dayangle,self.newyear,self.translatedday,self.month_day,self.portal,self.month,self.dayshift,self.priest)
 
 
     def set_epoch ( self, date ):
         '''find the vernal equinox day where new moon 1 lunar month before the ve equinox and on a wednesday'''
 
         self.epoch = ephem.Date ( date )
+        #print "epoch = " + str(self.epoch)
 
     def get_portal ( self, yearday ):
         for idx,startday in enumerate(reversed(PortalDays)):
@@ -148,10 +181,18 @@ class Date(object):
                 return {"day":day,"portal":portal,"month":month}
 
     def etd_date( self ):
-        return "%d/%d/%d/%d" % ( self.cycle,self.year,self.t_month,self.t_month_day)
+        return "%d/%d" % ( self.t_month,self.t_month_day)
+        #return "%d/%d/%d/%d" % ( self.cycle,self.year,self.t_month,self.t_month_day)
+
+    def etd_extended_date( self ):
+        return "%d/%d/%d/%d" % ( self.t_month,self.t_month_day,self.year,self.cycle)
+        #return "%d/%d/%d/%d" % ( self.cycle,self.year,self.t_month,self.t_month_day)
 
     def ead_date( self ):
-        return "%d/%d" % ( self.month,self.month_day)
+        return "%d/%d/%d/%d" % ( self.month,self.month_day,self.year,self.cycle)
+
+    def dayinyear( self ):
+        return (self.yearday + self.newyear - 1 ) % 364
 
     def calculate( self ):
         numyears = math.floor( self.daycount / 364 )
@@ -174,11 +215,15 @@ class Date(object):
         else:
             self.cycle = cycle
 
-        self.year = year+1
-        self.newyear += 1
-        self.yearday += 1
-        self.week += 1
-        self.translatedday += 1
+
+        self.year = int(year+1)
+        self.newyear = int(self.newyear+1)
+        self.yearday = int(self.yearday+1)
+        self.week = int(self.week+1)
+        self.translatedday = int(self.translatedday+1)
+
+        self.priest = Priests_Chronicals[ self.week - 1 ]
+        self.week_name = DayOfWeek[self.dayofweek]
 
         data = self.get_portal ( self.yearday )
         self.month_day = data["day"]
@@ -190,13 +235,26 @@ class Date(object):
         self.t_portal = data["portal"]
         self.t_month = data["month"]
 
-        self.moon = Moon ( self )
+        self.cycle = int(self.cycle)
+
+        #ephem objects
+
+        self.loc = enochephem.Places.sanfrancisco ( self.djd )
+        self.loc.date = self.djd
+        #self.loc = enochephem.Places.golgotha( self.djd )
+        self.moon = enochephem.Moon ( self )
         self.sun = ephem.Sun ( self.djd )
+        self.sun.compute( self.djd )
+        self.cosmos = enochephem.Cosmos()
+
+        self.time = enochephem.Time ( self.loc, self )
+        self.clock = Time( self )
 
 
     def next_day(self,numDays = 1):
-        self.daycount+=numDays
-        self.djd = ephem.Date(self.daycount + self.epoch)
+        #self.daycount+=numDays
+        #self.djd = ephem.Date(self.daycount + self.epoch)
+        self.djd = ephem.Date(self.djd + numDays )
         return self.calculate()
 
     def prev_day(self,numDays = 1):
@@ -213,12 +271,13 @@ class Date(object):
 
     def next_year(self, numYears = 1 ):
         year = self.year + numYears
-        cycle = self.cycle
-        return self.set_etd ( self.cycle, year, self.t_month, self.t_month_day )
+        time = self.djd - int(self.djd)
+        self.set_etd ( self.cycle, year, self.t_month, self.t_month_day , time )
+
 
 
     def prev_year(self,numYears = 1):
-        return self.next_day(-364*numYears)
+        return self.next_year ( numYears * -1 )
 
 
     def set_enoch_day ( self, date ):
@@ -226,7 +285,7 @@ class Date(object):
         self.daycount =  math.floor(date - self.epoch)
 
 
-    def set_etd ( self, cycle, year, month, day ):
+    def set_etd ( self, cycle, year, month, day, time = 0  ):
         if year > 294:
             cycle += 1
             year = year-294
@@ -234,18 +293,28 @@ class Date(object):
         cycle-=1
         year-=1
         month-=1
-        day-=1
+
+        # not sure what 21 has to do with this...
+        if year % 21 == 0:
+            day-=1
 
         newyear =  ( math.ceil ( (364*year) / 294 )  ) % 364
         yearday = (PortalDays[month] + day + newyear ) % 364
 
+        #print "pm = %d, day = %d, newyear = %d, yearday: %d" % ( PortalDays[month], day, newyear, yearday )
+
         enochyears = 294*cycle+year
         enochday = enochyears * 364 + yearday
 
-        date = ephem.Date(enochday + self.epoch )
+        time = 0
+        date = ephem.Date(enochday + self.epoch + time  )
+
+        print "etd date %s " % str(date)
+
         self.set_enoch_day ( date )
         self.calculate()
 
+        self.clock.get_time()
 
     def jd(self):
         return int(round(self.djd + 2415020,0))
@@ -267,27 +336,4 @@ class Date(object):
         return self.calculate()
 
 
-'''
 
-    def jd():
-
-    def next_day():
-
-    def prev_day():
-
-    def ead():
-
-    def etd():
-
-
-'''
-
-class Places(object):
-
-    @staticmethod
-    def golgotha():
-        golgotha = ephem.Observer()
-        golgotha.lat = 31.7811323
-        golgotha.lon = 35.2296886
-        golgotha.elevation = 2484
-        return golgotha

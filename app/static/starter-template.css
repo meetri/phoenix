@@ -1,0 +1,14 @@
+body {
+}
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+.pad {
+    padding-top:10px;
+}
+
+.lpad {
+    left-margin:20px;
+}

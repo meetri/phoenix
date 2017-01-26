@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row" style="color:white; background-color: #111;">
+    <div class="col-lg-4">
+        {% include "partial/calendar-details.html" %}
+    </div>
+    <div class="col-lg-8" style='overflow:hidden'>
+        {% include "partial/clock.html" %}
+    </div>
+</div>
+{% endblock %}

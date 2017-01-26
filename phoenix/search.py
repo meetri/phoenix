@@ -60,7 +60,7 @@ class Table(object):
                         datelist += [line.replace("\n","") + " 12:00:00"]
 
         elif str(date).lower() == "epoch":
-            edate = enoch.EpochDat
+            edate = enoch.EpochDate
         elif str(date).lower() == "now":
             edate = ephem.now()
         elif str(date).lower() == "priest":

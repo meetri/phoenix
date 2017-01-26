@@ -3,6 +3,7 @@ pyephem
 pytz
 egenix-mx-base
 argparse
+tzlocal
 
 # phoenix
 code to calculate the days and cycles in the phoenix calendar
